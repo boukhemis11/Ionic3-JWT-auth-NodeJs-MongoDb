@@ -14,14 +14,14 @@ export class AuthProvider {
   link: any;
 
   constructor(public http: Http, private events: Events) {
-    this.link = 'http://localhost:1338/auth';
+    this.link = 'http://localhost:1992/api';
   }
 
-  login(cred){
+  login(oUser){
     let headers = new Headers();
     headers.append('Content-Type', 'application/json');
     return new Promise(resolve => {
-      this.http.post(this.link + "/login", cred, {headers: headers})
+      this.http.post(this.link + "/login", oUser, {headers: headers})
           .map(res => res.json())
           .subscribe(
             data => {resolve(data)},

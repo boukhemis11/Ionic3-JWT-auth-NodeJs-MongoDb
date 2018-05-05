@@ -16,3 +16,4 @@ The token/user are stored in the localstorage of your device when authenticated
   
 Do not hesitate to report issue or ask a question
 clementra.ravier@gmail.com
+# Ionic3-JWT-auth-NodeJs-MongoDb

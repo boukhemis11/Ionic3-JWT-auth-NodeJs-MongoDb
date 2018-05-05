@@ -14,7 +14,7 @@ export class MainServiceProvider {
   link: any;
 
   constructor(public http: Http, private events: Events) {
-    this.link = 'http://localhost:1338/api';
+    this.link = 'http://localhost:1992/api';
   }
 
   loadHomeData() {

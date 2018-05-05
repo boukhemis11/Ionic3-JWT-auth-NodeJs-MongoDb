@@ -1,67 +1,73 @@
-var express    = require('express');
-var bodyParser = require('body-parser');
-var jwt        = require('jsonwebtoken');
-var app        = express();
-var cors       = require('cors');
+var express 	= require('express');
+var app         = express();
+var bodyParser  = require('body-parser');
+var morgan      = require('morgan');
+var mongoose    = require('mongoose');
 
+var jwt    = require('jsonwebtoken');
+var config = require('./config');
 
-var ourUser = {
-  username : "sample",
-  password : "jwtlogin"
-}
+var user = require('./routes/user.js');
+var voiture = require('./routes/voiture.js');
 
+var port = process.env.PORT || config.serverport;
 
-var fakeData = [
-    {text: "Ionic"},
-    {text: "Is"},
-    {text: "Pretty"},
-    {text: "Cool"},
-    {text: "To"},
-    {text: "use"}
-]
-
-
-const secret = 'RandomLettersAndNumbers'
-
-app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
-  extended: true
-}));
-
-const auth = express.Router();
-const api = express.Router();
-
-
-
-function handle_FakeData(req,res) {
-    res.json(fakeData);
-}
-
-
-
-
-// GET
-api.get('/getFakeData', function(req, resp){
-   handle_FakeData(req,resp);
+mongoose.connect(config.database, function(err){
+	if(err){
+		console.log('Error connecting database, please check if MongoDB is running.');
+	}else{
+		console.log('Connected to database...');
+	}
 });
 
-auth.post('/login', function(req, res){
-  if (req.body) {
-    var username = req.body.username.toLocaleLowerCase();
-    var password = req.body.password;
+// use body parser so we can get info from POST and/or URL parameters
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(require('body-parser').json({ type : '*/*' }));
 
-    if (username === ourUser.username && password === ourUser.password) {
-      const token = jwt.sign({iss: 'localhost:1338', role: 'user'}, secret);
-      res.status(200).json({success: true, token: token, username: username});
-    }else {
-      res.status(400).json({success: false, message: "Incorrect username/password"});
-    }
-  }else {
-    res.status(400).json({success: false, message: "Missing data"})
-  }
+// use morgan to log requests to the console
+app.use(morgan('dev'));
+
+// Enable CORS from client-side
+app.use(function(req, res, next) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader('Access-Control-Allow-Methods', 'PUT, GET, POST, DELETE, OPTIONS');
+  res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, Access-Control-Allow-Credentials");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  next();
 });
 
-app.use('/api', api); //:1338/api/...
-app.use('/auth', auth); //:1338/auth/...
-app.listen(1338);
+// basic routes
+
+app.get('/', function(req, res) {
+	res.send('voiture Watch API is running at http://localhost:' + port + '/api');
+});
+
+app.post('/register', user.signup);
+
+// express router
+var apiRoutes = express.Router();
+
+app.use('/api', apiRoutes);
+
+apiRoutes.post('/login', user.login);
+
+apiRoutes.use(user.authenticate); // route middleware to authenticate and check token
+
+// authenticated routes
+apiRoutes.get('/', function(req, res) {
+	res.status(201).json({ message: 'Welcome to the authenticated routes!' });
+});
+
+apiRoutes.get('/user/:id', user.getuserDetails); // API returns user details
+
+apiRoutes.put('/user/:id', user.updateUser); // API updates user details
+
+apiRoutes.delete('/user/:id', user.delUser); //API removes the user details of given user id
+
+apiRoutes.put('/password/:id', user.updatePassword); // API updates user password
+
+
+// kick off the server
+app.listen(port);
+console.log('voiture Manager app is listening at http://localhost:' + port);
+
