@@ -6,22 +6,23 @@
   </ion-navbar>
 </ion-header>
 
-
-<ion-content padding>
+<ion-content>
+<form [formGroup]="loginForm" (ngSubmit)="loginUser(loginForm.value)" padding>
   <ion-list>
     <ion-item>
       <ion-label fixed>Username</ion-label>
-      <ion-input type="text" value="" [(ngModel)]="data.username"></ion-input>
+      <ion-input type="text" id="inputUser" class="form-control" [formControl]="username"  placeholder="Username"></ion-input>
     </ion-item>
 
     <ion-item>
       <ion-label fixed>Password</ion-label>
-      <ion-input type="password" [(ngModel)]="data.password"></ion-input>
+      <ion-input type="password" id="inputPassword" class="form-control" [formControl]="password" placeholder="Password"></ion-input>
     </ion-item>
 
   </ion-list>
 
   <div padding>
-     <button ion-button color="primary" block (click)="signin()" [disabled]="!checkLoginDisable()">Signin</button>
+     <button ion-button color="primary" block  type="submit" >Signin</button>
   </div>
+</form>
 </ion-content>

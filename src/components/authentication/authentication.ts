@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { AuthProvider } from '../../providers/auth/auth';
 import { HomePage } from '../../pages/home/home';
 import { NavController,Events } from 'ionic-angular';
+import { FormControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 /**
  * Generated class for the AuthenticationComponent component.
@@ -16,17 +17,21 @@ import { NavController,Events } from 'ionic-angular';
 export class AuthenticationComponent {
   public data: any;
 
-  constructor(public navCtrl: NavController,private authprovider:AuthProvider, private events: Events) {
-    this.data = {
-      username :  '',
-      password: ''
-    }
-  }
+  constructor(public fb: FormBuilder, public navCtrl: NavController,private authprovider:AuthProvider, private events: Events) {
 
-  signin(){
-    this.authprovider.login(this.data)
+  }
+  username = new FormControl('', [Validators.required]);
+  password = new FormControl('', [Validators.required]);
+
+  loginForm: FormGroup = this.fb.group({
+    username: this.username,
+    password: this.password,
+  });
+
+  loginUser(formdata: any): void{
+    this.authprovider.login(this.loginForm.value)
       .then(
-        data => this.handleLoginSuccess(data)
+        data => this.handleLoginSuccess(this.loginForm.value)
       ).catch(()=>{
         console.log("catched auth")
       }
@@ -37,10 +42,5 @@ export class AuthenticationComponent {
     this.events.publish('app:setUser', data);
   }
 
-  checkLoginDisable(){
-    if(this.data.username.length == 0 || this.data.password.length == 0){
-      return false;
-    }
-    return true;
-  }
+
 }
